@@ -29,6 +29,6 @@ class Recipe extends Model
 
     public function items()
     {
-        //return $this->hasMany(RecipeItem::class);
+        return $this->hasMany(RecipeItem::class);
     }
 }
