@@ -10,10 +10,12 @@ class UnitSeeder extends Seeder
     public function run(): void
     {
         $units = [
-            ['name' => 'Pcs', 'symbol' => 'pcs'],
-            ['name' => 'Box', 'symbol' => 'box'],
-            ['name' => 'Pack', 'symbol' => 'pack'],
-            ['name' => 'Gram', 'symbol' => 'g'],
+            ['name' => 'Pcs', 'symbol' => 'pcs', 'conversion_factor' => 1],
+            ['name' => 'Box', 'symbol' => 'box', 'conversion_factor' => 1],
+            ['name' => 'Pack', 'symbol' => 'pack', 'conversion_factor' => 1],
+            ['name' => 'Gram', 'symbol' => 'g', 'conversion_factor' => 1],
+            ['name' => 'Kilogram', 'symbol' => 'kg', 'conversion_factor' => 1000],
+            ['name' => 'Milligram', 'symbol' => 'mg', 'conversion_factor' => 0.001],
         ];
 
         foreach ($units as $unit) {

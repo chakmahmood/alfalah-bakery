@@ -12,5 +12,6 @@ class Unit extends Model
         'name',
         'symbol',
         'is_active',
+        'conversion_factor',
     ];
 }

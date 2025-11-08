@@ -15,6 +15,7 @@ class StocksTable
     {
         return $table
             ->columns([
+
                 TextColumn::make('branch.name')
                     ->label('Cabang')
                     ->sortable()
@@ -28,7 +29,9 @@ class StocksTable
                 BadgeColumn::make('quantity')
                     ->label('Stok')
                     ->sortable()
-                    ->formatStateUsing(fn ($state) => number_format($state))
+                    ->formatStateUsing(fn ($state, $record) =>
+                        number_format($state) . ' ' . optional($record->product->unit)->symbol
+                    )
                     ->color(fn ($record) =>
                         $record->quantity <= $record->min_stock ? 'danger' : 'success'
                     )
@@ -41,7 +44,9 @@ class StocksTable
                 TextColumn::make('min_stock')
                     ->label('Stok Minimum')
                     ->sortable()
-                    ->formatStateUsing(fn ($state) => number_format($state))
+                    ->formatStateUsing(fn ($state, $record) =>
+                        number_format($state) . ' ' . optional($record->product->unit)->symbol
+                    )
                     ->toggleable(),
 
                 TextColumn::make('updated_at')

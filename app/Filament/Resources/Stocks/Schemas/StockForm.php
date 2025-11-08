@@ -15,39 +15,47 @@ class StockForm
         return $schema
             ->columns(2)
             ->components([
+
+                // Pilih cabang
                 Select::make('branch_id')
                     ->label('Cabang')
-                    ->options(fn () => Branch::query()
-                        ->pluck('name', 'id'))
+                    ->options(fn () => Branch::pluck('name', 'id'))
                     ->searchable()
                     ->required()
                     ->placeholder('Pilih cabang tempat stok disimpan'),
 
+                // Pilih produk
                 Select::make('product_id')
                     ->label('Produk')
-                    ->options(fn () => Product::query()
-                        ->where('is_active', true)
+                    ->options(fn () => Product::where('is_active', true)
                         ->orderBy('name')
                         ->pluck('name', 'id'))
                     ->searchable()
                     ->required()
-                    ->placeholder('Pilih produk'),
+                    ->reactive()
+                    ->afterStateUpdated(fn ($set, $state) => $set('unit_id', Product::find($state)?->unit_id)),
 
+                // Jumlah stok
                 TextInput::make('quantity')
                     ->label('Jumlah Stok')
                     ->numeric()
-                    ->suffix('unit')
-                    ->default(0)
                     ->required()
+                    ->suffix(fn ($get) => Product::find($get('product_id'))?->unit?->symbol ?? null)
                     ->helperText('Jumlah stok saat ini di cabang tersebut.'),
 
+                // Stok minimum
                 TextInput::make('min_stock')
                     ->label('Stok Minimum')
                     ->numeric()
-                    ->suffix('unit')
-                    ->default(0)
                     ->required()
+                    ->suffix(fn ($get) => Product::find($get('product_id'))?->unit?->symbol ?? null)
                     ->helperText('Sistem akan menandai stok rendah jika di bawah angka ini.'),
+
+                // unit_id (hidden, otomatis)
+                Select::make('unit_id')
+                    ->label('Satuan')
+                    ->options(fn () => Product::where('is_active', true)->pluck('unit.name', 'unit.id'))
+                    ->hidden()
             ]);
     }
 }
