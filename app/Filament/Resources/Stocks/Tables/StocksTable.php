@@ -2,11 +2,14 @@
 
 namespace App\Filament\Resources\Stocks\Tables;
 
+use App\Models\Branch;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
 class StocksTable
@@ -57,8 +60,29 @@ class StocksTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
-            ])
+             // 🏪 Filter berdasarkan cabang
+                SelectFilter::make('branch_id')
+    ->label('Cabang')
+    ->options(Branch::pluck('name', 'id'))
+    ->placeholder('Semua Cabang')
+    ->query(fn ($query, $state) => $state ? $query->where('branch_id', $state) : null),
+
+                // ⚙️ Filter berdasarkan tipe produk (join relasi product)
+                SelectFilter::make('product_type')
+                    ->label('Tipe Produk')
+                    ->options([
+                        'product' => 'Produk Jadi',
+                        'material' => 'Bahan Baku',
+                    ])
+                    ->placeholder('Semua Tipe')
+                    ->query(function ($query, $state) {
+                        if ($state) {
+                            $query->whereHas('product', fn ($q) =>
+                                $q->where('type', $state)
+                            );
+                        }
+                    }),
+                    ],FiltersLayout::AboveContent)
             ->recordActions([
                 EditAction::make()->label('Ubah'),
             ])

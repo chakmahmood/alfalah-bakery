@@ -2,10 +2,15 @@
 
 namespace App\Filament\Resources\StockMovements\Tables;
 
+use App\Models\Branch;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
 class StockMovementsTable
@@ -54,6 +59,11 @@ class StockMovementsTable
                     ->numeric(decimalPlaces: 2)
                     ->sortable(),
 
+                TextColumn::make('product.unit.symbol')
+                    ->label('Unit')
+                    ->sortable()
+                    ->default('-'),
+
                 // 🧾 Referensi
                 TextColumn::make('reference')
                     ->label('Referensi')
@@ -67,8 +77,41 @@ class StockMovementsTable
             ])
             ->defaultSort('created_at', 'desc')
             ->filters([
-                //
-            ])
+                 // 🏪 Filter berdasarkan cabang
+                SelectFilter::make('branch_id')
+                    ->label('Cabang')
+                    ->options(
+                        Branch::orderBy('name')->pluck('name', 'id')
+                    )
+                    ->placeholder('Semua Cabang'),
+
+                // ⚙️ Filter berdasarkan tipe pergerakan
+                SelectFilter::make('type')
+                    ->label('Tipe Pergerakan')
+                    ->options([
+                        'in' => 'Masuk (IN)',
+                        'out' => 'Keluar (OUT)',
+                        'transfer' => 'Transfer',
+                        'adjustment' => 'Penyesuaian',
+                        'production' => 'Produksi',
+                        'return' => 'Retur',
+                    ])
+                    ->placeholder('Semua Tipe'),
+                Filter::make('created_at_range')
+                    ->label('Rentang Tanggal')
+                    ->form([
+                        DatePicker::make('from')
+                            ->label('Dari tanggal'),
+                        DatePicker::make('until')
+                            ->label('Sampai tanggal'),
+                    ])
+                    ->query(function ($query, array $data) {
+                        return $query
+                            ->when($data['from'], fn($q, $date) => $q->whereDate('created_at', '>=', $date))
+                            ->when($data['until'], fn($q, $date) => $q->whereDate('created_at', '<=', $date));
+                    }),
+
+                    ], FiltersLayout::AboveContent)
             ->recordActions([
                 EditAction::make()
                     ->label('Edit')

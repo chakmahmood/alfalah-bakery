@@ -3,8 +3,7 @@
 
         <h2 class="text-xl font-semibold text-gray-800">Produksi Harian</h2>
         <p class="text-sm text-gray-600">
-            Gunakan form ini untuk mencatat produksi harian. Stok produk jadi akan bertambah,
-            dan stok bahan baku akan otomatis berkurang sesuai resep.
+            Gunakan form ini untuk mencatat produksi harian.
         </p>
 
         {{-- Form --}}
