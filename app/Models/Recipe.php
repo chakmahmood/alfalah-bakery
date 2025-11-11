@@ -31,4 +31,11 @@ class Recipe extends Model
     {
         return $this->hasMany(RecipeItem::class);
     }
+
+    public function scopeForBranchAndProduct($query, $branchId, $productId)
+    {
+        return $query->where('branch_id', $branchId)
+            ->where('product_id', $productId);
+    }
+
 }

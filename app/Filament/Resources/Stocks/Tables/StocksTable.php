@@ -32,22 +32,26 @@ class StocksTable
                 BadgeColumn::make('quantity')
                     ->label('Stok')
                     ->sortable()
-                    ->formatStateUsing(fn ($state, $record) =>
+                    ->formatStateUsing(
+                        fn($state, $record) =>
                         number_format($state) . ' ' . optional($record->product->unit)->symbol
                     )
-                    ->color(fn ($record) =>
+                    ->color(
+                        fn($record) =>
                         $record->quantity <= $record->min_stock ? 'danger' : 'success'
                     )
-                    ->tooltip(fn ($record) =>
+                    ->tooltip(
+                        fn($record) =>
                         $record->quantity <= $record->min_stock
-                            ? 'Stok menipis — perlu restok segera'
-                            : 'Stok aman'
+                        ? 'Stok menipis — perlu restok segera'
+                        : 'Stok aman'
                     ),
 
                 TextColumn::make('min_stock')
                     ->label('Stok Minimum')
                     ->sortable()
-                    ->formatStateUsing(fn ($state, $record) =>
+                    ->formatStateUsing(
+                        fn($state, $record) =>
                         number_format($state) . ' ' . optional($record->product->unit)->symbol
                     )
                     ->toggleable(),
@@ -60,29 +64,24 @@ class StocksTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-             // 🏪 Filter berdasarkan cabang
+                // 🏪 Filter berdasarkan cabang (relasi)
                 SelectFilter::make('branch_id')
-    ->label('Cabang')
-    ->options(Branch::pluck('name', 'id'))
-    ->placeholder('Semua Cabang')
-    ->query(fn ($query, $state) => $state ? $query->where('branch_id', $state) : null),
+                    ->label('Cabang')
+                    ->relationship('branch', 'name')
+                    ->placeholder('Semua Cabang'),
 
-                // ⚙️ Filter berdasarkan tipe produk (join relasi product)
                 SelectFilter::make('product_type')
                     ->label('Tipe Produk')
                     ->options([
                         'product' => 'Produk Jadi',
                         'material' => 'Bahan Baku',
                     ])
-                    ->placeholder('Semua Tipe')
-                    ->query(function ($query, $state) {
-                        if ($state) {
-                            $query->whereHas('product', fn ($q) =>
-                                $q->where('type', $state)
-                            );
-                        }
-                    }),
-                    ],FiltersLayout::AboveContent)
+                    ->query(fn($query, $state) => $query->when($state, function ($q) use ($state) {
+                        $q->whereHas('product', fn($q2) => $q2->where('type', $state));
+                    }))
+                    ->placeholder('Semua Tipe'),
+
+            ], FiltersLayout::AboveContent)
             ->recordActions([
                 EditAction::make()->label('Ubah'),
             ])

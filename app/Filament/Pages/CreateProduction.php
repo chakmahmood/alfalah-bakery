@@ -48,10 +48,25 @@ class CreateProduction extends Page implements Forms\Contracts\HasForms
                 ->schema([
                     Forms\Components\Select::make('recipe_id')
                         ->label('Resep / Produk')
-                        ->options(Recipe::pluck('name', 'id'))
+                        ->options(function (callable $get) {
+                            $branchId = $get('../../branch_id');
+                            // ../../ karena Repeater nested dalam form,
+                            // jadi naik dua level untuk ambil branch_id
+
+                            if (!$branchId) {
+                                return Recipe::pluck('name', 'id');
+                            }
+
+                            // ambil resep yang produknya ada di branch tersebut
+                            return Recipe::whereHas('product.branches', function ($q) use ($branchId) {
+                                $q->where('branches.id', $branchId);
+                            })
+                                ->pluck('name', 'id');
+                        })
                         ->searchable()
                         ->required()
-                        ->placeholder('Pilih resep'),
+                        ->placeholder('Pilih resep')
+                        ->reactive(),
 
                     Forms\Components\TextInput::make('quantity')
                         ->label('Jumlah Produksi')

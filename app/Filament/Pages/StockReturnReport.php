@@ -108,14 +108,14 @@ class StockReturnReport extends Page implements HasTable
                 ->query(function ($query, array $data) {
                     return $query->whereHas('stockReturn', function ($q) use ($data) {
                         $q->when($data['from'], fn($q, $date) => $q->whereDate('return_date', '>=', $date))
-                          ->when($data['until'], fn($q, $date) => $q->whereDate('return_date', '<=', $date));
+                            ->when($data['until'], fn($q, $date) => $q->whereDate('return_date', '<=', $date));
                     });
                 }),
 
             SelectFilter::make('stockReturn.fromBranch')
-    ->label('Cabang Asal')
-    ->relationship('stockReturn.fromBranch', 'name')
-    ->placeholder('Semua Cabang'),
+                ->label('Cabang Asal')
+                ->relationship('stockReturn.fromBranch', 'name')
+                ->placeholder('Semua Cabang'),
 
 
             SelectFilter::make('stockReturn.return_type')

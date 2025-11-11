@@ -19,28 +19,58 @@ class StockForm
                 // Pilih cabang
                 Select::make('branch_id')
                     ->label('Cabang')
-                    ->options(fn () => Branch::pluck('name', 'id'))
+                    ->options(fn() => Branch::where('is_active', true)->pluck('name', 'id'))
                     ->searchable()
                     ->required()
-                    ->placeholder('Pilih cabang tempat stok disimpan'),
+                    ->reactive(),
 
-                // Pilih produk
+                // Pilih produk (hanya yang tersedia di cabang)
                 Select::make('product_id')
                     ->label('Produk')
-                    ->options(fn () => Product::where('is_active', true)
-                        ->orderBy('name')
-                        ->pluck('name', 'id'))
+                    ->options(function ($get) {
+                        $branchId = $get('branch_id');
+                        if (!$branchId)
+                            return [];
+
+                        return Product::where('is_active', true)
+                            ->whereHas('branches', fn($q) => $q->where('branch_id', $branchId))
+                            ->orderBy('name')
+                            ->pluck('name', 'id');
+                    })
                     ->searchable()
                     ->required()
                     ->reactive()
-                    ->afterStateUpdated(fn ($set, $state) => $set('unit_id', Product::find($state)?->unit_id)),
+                    ->afterStateUpdated(function ($set, $state) {
+                        if ($state) {
+                            $product = Product::find($state);
+                            $set('unit_id', $product?->unit_id);
+                        } else {
+                            $set('unit_id', null);
+                        }
+                    })
+                    ->rule(function ($get) {
+                        $branchId = $get('branch_id');
+                        $productId = $get('product_id');
+
+                        return function ($attribute, $value, $fail) use ($branchId, $productId) {
+                            if ($branchId && $productId) {
+                                $exists = \App\Models\Stock::where('branch_id', $branchId)
+                                    ->where('product_id', $productId)
+                                    ->exists();
+                                if ($exists) {
+                                    $fail('Stok untuk cabang dan produk ini sudah ada.');
+                                }
+                            }
+                        };
+                    }),
+
 
                 // Jumlah stok
                 TextInput::make('quantity')
                     ->label('Jumlah Stok')
                     ->numeric()
                     ->required()
-                    ->suffix(fn ($get) => Product::find($get('product_id'))?->unit?->symbol ?? null)
+                    ->suffix(fn($get) => Product::find($get('product_id'))?->unit?->symbol ?? null)
                     ->helperText('Jumlah stok saat ini di cabang tersebut.'),
 
                 // Stok minimum
@@ -48,14 +78,19 @@ class StockForm
                     ->label('Stok Minimum')
                     ->numeric()
                     ->required()
-                    ->suffix(fn ($get) => Product::find($get('product_id'))?->unit?->symbol ?? null)
+                    ->suffix(fn($get) => Product::find($get('product_id'))?->unit?->symbol ?? null)
                     ->helperText('Sistem akan menandai stok rendah jika di bawah angka ini.'),
 
-                // unit_id (hidden, otomatis)
-                Select::make('unit_id')
-                    ->label('Satuan')
-                    ->options(fn () => Product::where('is_active', true)->pluck('unit.name', 'unit.id'))
+                // unit_id hidden
+                TextInput::make('unit_id')
                     ->hidden()
+                    ->required()
+                    ->dehydrated() // penting agar dikirim saat submit
+                    ->afterStateHydrated(function ($component, $state, $get) {
+                        if (!$state && $get('product_id')) {
+                            $component->state(Product::find($get('product_id'))?->unit_id);
+                        }
+                    }),
             ]);
     }
 }

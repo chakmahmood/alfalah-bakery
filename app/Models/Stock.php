@@ -7,9 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class Stock extends Model
 {
-    /** @use HasFactory<\Database\Factories\StockFactory> */
     use HasFactory;
-     protected $fillable = [
+
+    protected $fillable = [
         'branch_id',
         'product_id',
         'unit_id',
@@ -32,7 +32,7 @@ class Stock extends Model
         return $this->belongsTo(Product::class);
     }
 
-    /** Helper untuk cek stok aman atau tidak */
+    /** Helper cek stok rendah */
     public function getIsLowStockAttribute(): bool
     {
         return $this->quantity <= $this->min_stock;

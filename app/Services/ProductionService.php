@@ -2,8 +2,10 @@
 
 namespace App\Services;
 
+use App\Models\Branch;
 use App\Models\Recipe;
 use App\Models\Stock;
+use App\Models\StockMovement;
 use App\Services\StockService;
 use Illuminate\Support\Facades\DB;
 use Exception;
@@ -29,8 +31,22 @@ class ProductionService
                 throw new Exception('Jumlah produksi harus lebih besar dari 0.');
             }
 
-            $reference = "PRODUCTION-{$recipeId}-" . now()->format('Ymd');
+            $branch = Branch::findOrFail($branchId);
 
+            $prefix = "PRODUCTION-{$branch->code}-{$recipeId}-" . now()->format('Ymd');
+
+            $lastReference = DB::table('stock_movements')
+                ->where('reference', 'like', "{$prefix}-%")
+                ->orderByDesc('id')
+                ->value('reference');
+
+            if ($lastReference && preg_match('/-(\d{3})$/', $lastReference, $matches)) {
+                $nextNumber = str_pad(((int) $matches[1]) + 1, 3, '0', STR_PAD_LEFT);
+            } else {
+                $nextNumber = '001';
+            }
+
+            $reference = "{$prefix}-{$nextNumber}";
             // 🔻 Kurangi stok bahan baku
             foreach ($recipe->items as $item) {
                 $totalBahan = $item->quantity * $jumlahProduksi;

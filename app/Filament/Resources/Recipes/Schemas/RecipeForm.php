@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Recipes\Schemas;
 
+use App\Models\Unit;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -10,8 +11,6 @@ use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Schema;
 use App\Models\Branch;
 use App\Models\Product;
-use App\Models\Unit;
-use Filament\Forms;
 
 class RecipeForm
 {
@@ -23,9 +22,8 @@ class RecipeForm
                 // 📍 Cabang
                 Select::make('branch_id')
                     ->label('Cabang')
-                    ->options(Branch::pluck('name', 'id'))
+                    ->options(Branch::where('is_active', true)->pluck('name', 'id'))
                     ->searchable()
-                    ->required()
                     ->reactive()
                     ->placeholder('Pilih cabang'),
 
@@ -35,19 +33,13 @@ class RecipeForm
                     ->options(function (callable $get) {
                         $branchId = $get('branch_id');
 
-                        // Jika belum pilih cabang, tampilkan semua produk jadi
-                        if (!$branchId) {
-                            return Product::where('type', 'product')
-                                ->pluck('name', 'id');
+                        $query = Product::where('type', 'product')->where('is_active', true);
+
+                        if ($branchId) {
+                            $query->whereHas('branches', fn($q) => $q->where('branch_id', $branchId));
                         }
 
-                        // Produk milik cabang + produk global (branch_id null)
-                        return Product::where('type', 'product')
-                            ->where(function ($q) use ($branchId) {
-                                $q->whereNull('branch_id')
-                                  ->orWhere('branch_id', $branchId);
-                            })
-                            ->pluck('name', 'id');
+                        return $query->orderBy('name')->pluck('name', 'id');
                     })
                     ->searchable()
                     ->required()
@@ -56,7 +48,7 @@ class RecipeForm
                         if ($state) {
                             $product = Product::find($state);
                             if ($product) {
-                               $set('name', 'Resep ' . $product->name);
+                                $set('name', 'Resep ' . $product->name);
                             }
                         }
                     })
@@ -94,27 +86,30 @@ class RecipeForm
                             ->options(function (callable $get) {
                                 $branchId = $get('../../branch_id');
 
-                                if (!$branchId) {
-                                    return Product::where('type', 'material')
-                                        ->pluck('name', 'id');
+                                $query = Product::where('type', 'material')->where('is_active', true);
+
+                                if ($branchId) {
+                                    $query->whereHas('branches', fn($q) => $q->where('branch_id', $branchId));
                                 }
 
-                                // bahan milik cabang atau global
-                                return Product::where('type', 'material')
-                                    ->where(function ($q) use ($branchId) {
-                                        $q->whereNull('branch_id')
-                                          ->orWhere('branch_id', $branchId);
-                                    })
-                                    ->pluck('name', 'id');
+                                return $query->orderBy('name')->pluck('name', 'id');
                             })
                             ->searchable()
-                            ->required(),
+                            ->required()
+                            ->reactive()
+                            ->afterStateUpdated(function ($state, callable $set) {
+                                if ($state) {
+                                    $product = Product::find($state);
+                                    if ($product) {
+                                        $set('unit_id', $product->unit_id);
+                                    }
+                                }
+                            }),
 
-                        // Pilih satuan
                         Select::make('unit_id')
-                            ->label('Satuan')
-                            ->options(Unit::pluck('name', 'id'))
-                            ->required(),
+                        ->label('Satuan')
+                        ->options(Unit::pluck('name', 'id'))
+                        ->required(),
 
                         // Jumlah bahan
                         TextInput::make('quantity')
