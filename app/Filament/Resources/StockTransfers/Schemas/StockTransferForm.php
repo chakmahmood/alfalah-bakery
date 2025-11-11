@@ -92,21 +92,38 @@ class StockTransferForm
                         Select::make('product_id')
                             ->label('Produk')
                             ->options(function (callable $get) {
-                                $branchId = $get('../../from_branch_id');
-                                if (!$branchId)
-                                    return [];
+                                $fromBranch = $get('../../from_branch_id');
+                                $toBranch = $get('../../to_branch_id');
 
-                                // Ambil produk yang punya stok di cabang asal
-                                $stocks = Stock::where('branch_id', $branchId)
-                                    ->with('product.unit')
+                                // Pastikan dua cabang sudah dipilih
+                                if (!$fromBranch || !$toBranch) {
+                                    return [];
+                                }
+
+                                // Cari produk yang dimiliki kedua cabang
+                                $productIds = \DB::table('branch_product')
+                                    ->whereIn('branch_id', [$fromBranch, $toBranch])
+                                    ->select('product_id')
+                                    ->groupBy('product_id')
+                                    ->havingRaw('COUNT(DISTINCT branch_id) = 2') // artinya dimiliki oleh kedua cabang
+                                    ->pluck('product_id');
+
+                                // Ambil produk lengkapnya
+                                $products = Product::whereIn('id', $productIds)
+                                    ->with('unit')
                                     ->get();
 
-                                return $stocks->mapWithKeys(function ($stock) {
-                                    $name = $stock->product->name;
-                                    $unit = $stock->product->unit->symbol ?? '';
-                                    $qty = (float) $stock->quantity;
+                                return $products->mapWithKeys(function ($product) use ($fromBranch) {
+                                    // Ambil stok di cabang asal (optional, buat info)
+                                    $stock = Stock::where('branch_id', $fromBranch)
+                                        ->where('product_id', $product->id)
+                                        ->first();
+
+                                    $qty = $stock ? number_format((float) $stock->quantity, 2) : 0;
+                                    $unit = $product->unit?->symbol ?? '';
+
                                     return [
-                                        $stock->product_id => "{$name} ({$qty} {$unit})",
+                                        $product->id => "{$product->name} ({$qty} {$unit})",
                                     ];
                                 });
                             })
@@ -114,6 +131,8 @@ class StockTransferForm
                             ->reactive()
                             ->required()
                             ->placeholder('Pilih produk'),
+
+
 
                         // Jumlah transfer
                         TextInput::make('quantity')
@@ -178,3 +197,4 @@ class StockTransferForm
             ]);
     }
 }
+
