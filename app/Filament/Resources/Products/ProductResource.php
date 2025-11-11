@@ -7,6 +7,7 @@ use App\Filament\Resources\Products\Pages\EditProduct;
 use App\Filament\Resources\Products\Pages\ListProducts;
 use App\Filament\Resources\Products\Schemas\ProductForm;
 use App\Filament\Resources\Products\Tables\ProductsTable;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\Product;
 use BackedEnum;
 use UnitEnum;
@@ -49,4 +50,18 @@ class ProductResource extends Resource
             'edit' => EditProduct::route('/{record}/edit'),
         ];
     }
+
+
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->with([
+                'branches' => function ($query) {
+                    $query->distinct();
+                },
+            ]);
+    }
+
+
 }

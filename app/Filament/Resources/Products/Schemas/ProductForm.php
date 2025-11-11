@@ -6,11 +6,11 @@ use App\Models\Branch;
 use App\Models\Category;
 use App\Models\Unit;
 use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Toggle;
-use Filament\Forms\Components\Group;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 
@@ -55,12 +55,20 @@ class ProductForm
                         ->preload()
                         ->placeholder('Pilih satuan'),
 
-                    Select::make('branch_id')
-                        ->label('Cabang (opsional)')
-                        ->relationship('branch', 'name')
-                        ->searchable()
-                        ->preload()
-                        ->placeholder('Kosongkan jika berlaku untuk semua cabang'),
+                    CheckboxList::make('branches')
+                        ->label('Cabang')
+                        ->options(Branch::where('is_active', true)->pluck('name', 'id')->toArray())
+                        ->columns(3)
+                        ->helperText('Centang cabang yang memiliki produk ini.')
+                        ->afterStateHydrated(function ($component) {
+                            $record = $component->getContainer()->getRecord(); // ambil Product model
+                            if ($record) {
+                                $component->state($record->branches()->pluck('branches.id')->toArray());
+                            }
+                        }),
+
+
+
                 ]),
 
             Section::make('Harga & Status')

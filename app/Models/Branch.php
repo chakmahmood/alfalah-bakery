@@ -16,8 +16,14 @@ class Branch extends Model
         'is_active',
     ];
 
-    public function user()
+    public function users()
     {
         return $this->hasMany(User::class);
     }
+
+    public function products()
+    {
+        return $this->belongsToMany(Product::class, 'branch_product');
+    }
+
 }

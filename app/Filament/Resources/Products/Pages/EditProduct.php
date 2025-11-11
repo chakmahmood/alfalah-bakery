@@ -16,4 +16,21 @@ class EditProduct extends EditRecord
             DeleteAction::make(),
         ];
     }
+
+    protected function mutateFormDataBeforeSave(array $data): array
+    {
+        $branches = $data['branches'] ?? [];
+        unset($data['branches']);
+
+        $record = parent::mutateFormDataBeforeSave($data);
+
+        // Sync pivot dengan timestamps
+        $this->record->branches()->sync(
+            collect($branches)
+                ->mapWithKeys(fn($id) => [$id => ['updated_at' => now(), 'created_at' => now()]])
+                ->toArray()
+        );
+
+        return $record;
+    }
 }

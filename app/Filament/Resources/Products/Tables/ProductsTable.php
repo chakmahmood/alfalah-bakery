@@ -31,6 +31,11 @@ class ProductsTable
                     ->sortable()
                     ->limit(40),
 
+                TextColumn::make('sku')
+                    ->label('SKU')
+                    ->sortable()
+                    ->searchable(),
+
                 TextColumn::make('category.name')
                     ->label('Kategori')
                     ->sortable()
@@ -47,12 +52,12 @@ class ProductsTable
                         'success' => 'product',
                         'warning' => 'material',
                     ])
-                    ->formatStateUsing(fn (string $state) => $state === 'product' ? 'Produk Jadi' : 'Bahan Baku'),
+                    ->formatStateUsing(fn(string $state) => $state === 'product' ? 'Produk Jadi' : 'Bahan Baku'),
 
                 IconColumn::make('is_sellable')
                     ->label('Jual')
                     ->boolean()
-                    ->tooltip(fn ($state) => $state ? 'Dijual di kasir' : 'Tidak dijual'),
+                    ->tooltip(fn($state) => $state ? 'Dijual di kasir' : 'Tidak dijual'),
 
                 IconColumn::make('is_active')
                     ->label('Aktif')
@@ -71,12 +76,6 @@ class ProductsTable
                     ->sortable()
                     ->toggleable(),
 
-                TextColumn::make('branch.name')
-                    ->label('Cabang')
-                    ->default('-')
-                    ->sortable()
-                    ->toggleable(),
-
                 TextColumn::make('created_at')
                     ->label('Dibuat')
                     ->dateTime('d M Y')
@@ -91,20 +90,13 @@ class ProductsTable
             ])
             ->defaultSort('name')
             ->filters([
-                SelectFilter::make('branch_id')
-                    ->label('Cabang')
-                    ->options(
-                        Branch::orderBy('name')->pluck('name', 'id')
-                    )
-                    ->placeholder('Semua Cabang'),
-
                 SelectFilter::make('type')
                     ->label('Tipe Produk')
                     ->options([
                         'product' => 'Produk Jadi',
                         'material' => 'Bahan Baku',
                     ]),
-                    ],FiltersLayout::AboveContent)
+            ], FiltersLayout::AboveContent)
             ->recordActions([
                 EditAction::make()
                     ->label('Ubah'),

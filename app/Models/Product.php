@@ -11,7 +11,6 @@ class Product extends Model
     use HasFactory;
 
     protected $fillable = [
-        'branch_id',
         'category_id',
         'unit_id',
         'sku',
@@ -62,10 +61,11 @@ class Product extends Model
         return $this->belongsTo(Unit::class);
     }
 
-    public function branch()
+    public function branches()
     {
-        return $this->belongsTo(Branch::class);
+        return $this->belongsToMany(Branch::class, 'branch_product');
     }
+
 
     public function stockMovements()
     {

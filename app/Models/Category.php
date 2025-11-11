@@ -51,8 +51,8 @@ class Category extends Model
     /**
      * Relasi ke produk (jika nanti ditambahkan)
      */
-    // public function products()
-    // {
-    //     return $this->hasMany(Product::class);
-    // }
+    public function products()
+    {
+        return $this->hasMany(Product::class);
+    }
 }
