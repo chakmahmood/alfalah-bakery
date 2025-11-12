@@ -13,6 +13,8 @@ class CreateSale extends CreateRecord
     protected function afterCreate(): void
     {
         $record = $this->getRecord();
+
+        // Update stok
         foreach ($record->items as $item) {
             StockService::move(
                 'out',
@@ -23,6 +25,18 @@ class CreateSale extends CreateRecord
                 'Penjualan #' . $record->invoice_number
             );
         }
+
+        // Hitung total bayar & kembalian dari relasi payments
+        $record->load('payments'); // pastikan payments termuat
+        $totalPayment = $record->payments->sum('amount');
+        $changeDue = $totalPayment - $record->total;
+        // Redirect ke halaman print dengan query params
+        $this->redirect(route('sales.print', ['sale' => $record->id]) . '?' . http_build_query([
+            'total_payment' => $totalPayment,
+            'change_due' => max(0, $changeDue),
+        ]));
+
+
     }
 
 }
