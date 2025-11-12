@@ -48,4 +48,6 @@ class SaleResource extends Resource
             'edit' => EditSale::route('/{record}/edit'),
         ];
     }
+
+
 }
