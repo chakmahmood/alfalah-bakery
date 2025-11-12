@@ -21,8 +21,8 @@ class PaymentMethod extends Model
     ];
 
     // Relasi ke SalePayment (nanti)
-    // public function salePayments()
-    // {
-    //     return $this->hasMany(SalePayment::class);
-    // }
+    public function salePayments()
+    {
+        return $this->hasMany(SalePayment::class);
+    }
 }
