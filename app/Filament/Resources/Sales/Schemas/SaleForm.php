@@ -189,7 +189,7 @@ class SaleForm
                         ])
                         ->columns(1)
                         ->label('Pembayaran')
-                        ->live(debounce: 200)
+                        ->reactive()
                         ->afterStateUpdated(fn($state, callable $set, callable $get) => self::updateTotals($set, $get)),
 
                     TextInput::make('total_payment')

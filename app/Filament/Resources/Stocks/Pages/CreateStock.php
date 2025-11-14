@@ -14,7 +14,6 @@ class CreateStock extends CreateRecord
     {
         $branchId  = $data['branch_id'];
         $productId = $data['product_id'];
-        $unitId    = $data['unit_id'];
         $quantity  = $data['quantity'];
         $minStock  = $data['min_stock'];
 
@@ -23,7 +22,6 @@ class CreateStock extends CreateRecord
             $productId,
             $quantity,
             $minStock,
-            $unitId
         );
 
         // Tampilkan notification

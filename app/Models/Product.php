@@ -32,6 +32,8 @@ class Product extends Model
         'cost_price' => 'decimal:2',
     ];
 
+    protected $appends = ['image_url'];
+
     protected static function booted(): void
     {
         static::creating(function ($product) {
@@ -66,6 +68,10 @@ class Product extends Model
         return $this->belongsToMany(Branch::class, 'branch_product');
     }
 
+    public function stocks()
+    {
+        return $this->hasMany(Stock::class);
+    }
 
     public function stockMovements()
     {
@@ -81,4 +87,31 @@ class Product extends Model
     {
         return $this->type === 'product' ? 'Produk Jadi' : 'Bahan Baku';
     }
+
+    // Product.php
+    public function stockForBranch($branchId)
+    {
+        return Stock::where('product_id', $this->id)
+            ->where('branch_id', $branchId)
+            ->first();
+    }
+    public function stockQuantityForBranch($branchId)
+    {
+        return $this->stocks()
+            ->where('branch_id', $branchId)
+            ->value('quantity') ?? 0;
+    }
+
+    public function getImageUrlAttribute()
+    {
+        $filename = basename($this->image ?? 'default.jpg');
+
+        // Jika file tidak ada di storage, pakai default
+        if (!\Storage::disk('public')->exists("products/{$filename}")) {
+            return asset('storage/products/default.jpg');
+        }
+
+        return asset("storage/products/{$filename}");
+    }
+
 }

@@ -13,7 +13,7 @@ class CreateSale extends CreateRecord
     protected function afterCreate(): void
     {
         $record = $this->getRecord();
-
+        // dd($record);
         // Update stok
         foreach ($record->items as $item) {
             StockService::move(

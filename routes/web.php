@@ -1,10 +1,15 @@
 <?php
 
 use App\Http\Controllers\PrintController;
+use App\Http\Controllers\SaleController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/sales/{sale}/print', [PrintController::class, 'printStruk'])->name('sales.print');
+Route::middleware(['auth'])->group(function () {
+    Route::get('/sales/print/{invoice}', [PrintController::class, 'printStruk'])->name('sales.print');
+    Route::resource('sales', SaleController::class);
+});
+

@@ -8,19 +8,21 @@ use Illuminate\Http\Request;
 class PrintController extends Controller
 {
     /**
-     * Tampilkan struk POS untuk penjualan tertentu
+     * Tampilkan struk POS berdasarkan nomor invoice
      */
-    public function printStruk(Sale $sale)
-{
-    $sale->load(['items.product', 'items.unit', 'payments.paymentMethod', 'branch', 'user']);
+    public function printStruk(string $invoice, Request $request)
+    {
+        $sale = Sale::where('invoice_number', $invoice)
+            ->with(['items.product.unit', 'payments.paymentMethod', 'branch', 'user'])
+            ->firstOrFail();
 
-    // Total yang dibayarkan pembeli
-    $totalPayment = $sale->payments->sum('amount');
+        $totalPayment = $sale->payments->sum('amount');
+        $changeDue = max(0, $totalPayment - $sale->total);
 
-    // Kembalian jika bayar lebih dari total tagihan
-    $changeDue = max(0, $totalPayment - $sale->total);
+        // Ambil nama pembeli dari query parameter
+        $customerName = session('customer_name', '-');
 
-    return view('sales.print', compact('sale', 'totalPayment', 'changeDue'));
-}
+        return view('sales.print', compact('sale', 'totalPayment', 'changeDue', 'customerName'));
+    }
 
 }

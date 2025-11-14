@@ -52,16 +52,22 @@ class StockForm
                         $branchId = $get('branch_id');
                         $productId = $get('product_id');
 
-                        return function ($attribute, $value, $fail) use ($branchId, $productId) {
+                        return function ($attribute, $value, $fail) use ($branchId, $productId, $get) {
                             if ($branchId && $productId) {
-                                $exists = \App\Models\Stock::where('branch_id', $branchId)
-                                    ->where('product_id', $productId)
-                                    ->exists();
-                                if ($exists) {
+                                $query = \App\Models\Stock::where('branch_id', $branchId)
+                                    ->where('product_id', $productId);
+
+                                // Abaikan record yang sedang diedit
+                                if ($get('id')) {
+                                    $query->where('id', '!=', $get('id'));
+                                }
+
+                                if ($query->exists()) {
                                     $fail('Stok untuk cabang dan produk ini sudah ada.');
                                 }
                             }
                         };
+
                     }),
 
 
@@ -85,12 +91,19 @@ class StockForm
                 TextInput::make('unit_id')
                     ->hidden()
                     ->required()
-                    ->dehydrated() // penting agar dikirim saat submit
-                    ->afterStateHydrated(function ($component, $state, $get) {
-                        if (!$state && $get('product_id')) {
-                            $component->state(Product::find($get('product_id'))?->unit_id);
+                    ->dehydrated()
+                    ->afterStateHydrated(function ($component, $state, $get, $record) {
+                        // $record hanya tersedia saat edit
+                        if (!$state) {
+                            if ($get('product_id')) {
+                                $component->state(Product::find($get('product_id'))?->unit_id);
+                            } elseif ($record) {
+                                // fallback: ambil unit dari record yang sedang diedit
+                                $component->state($record->unit_id);
+                            }
                         }
                     }),
+
             ]);
     }
 }

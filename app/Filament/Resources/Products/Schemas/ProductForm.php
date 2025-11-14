@@ -109,7 +109,9 @@ class ProductForm
                     FileUpload::make('image')
                         ->label('Foto Produk')
                         ->image()
+                        ->disk('public')
                         ->directory('products')
+                        // ->visibility('public')
                         ->imagePreviewHeight('150')
                         ->maxSize(2048),
                 ]),

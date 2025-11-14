@@ -37,4 +37,41 @@ class Stock extends Model
     {
         return $this->quantity <= $this->min_stock;
     }
+
+    public static function addOrUpdateStock($branchId, $productId, $quantity, $minStock)
+    {
+        // Cek apakah stok untuk cabang + produk sudah ada
+        $stock = self::where('branch_id', $branchId)
+            ->where('product_id', $productId)
+            ->first();
+
+        if ($stock) {
+            // Update stok
+            $stock->update([
+                'quantity' => $quantity,
+                'min_stock' => $minStock,
+            ]);
+
+            return [
+                'success' => true,
+                'message' => 'Stok berhasil diperbarui.',
+                'stock' => $stock,
+            ];
+        }
+
+        // Buat stok baru
+        $stock = self::create([
+            'branch_id' => $branchId,
+            'product_id' => $productId,
+            'quantity' => $quantity,
+            'min_stock' => $minStock,
+        ]);
+
+        return [
+            'success' => true,
+            'message' => 'Stok berhasil ditambahkan.',
+            'stock' => $stock,
+        ];
+    }
+
 }

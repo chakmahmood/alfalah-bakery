@@ -22,7 +22,6 @@ class EditStock extends EditRecord
     {
         $branchId  = $data['branch_id'];
         $productId = $data['product_id'];
-        $unitId    = $data['unit_id'];
         $quantity  = $data['quantity'];
         $minStock  = $data['min_stock'];
 
@@ -31,7 +30,6 @@ class EditStock extends EditRecord
             $productId,
             $quantity,
             $minStock,
-            $unitId
         );
 
         // Tampilkan notification
@@ -43,4 +41,5 @@ class EditStock extends EditRecord
         // Batalkan update default karena sudah ditangani
         return [];
     }
+
 }

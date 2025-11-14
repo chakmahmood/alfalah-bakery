@@ -74,6 +74,7 @@
         <p style="margin:0;">{{ $sale->branch->name ?? '-' }}</p>
         <p style="margin:0 0 2px 0;">{{ $sale->branch->address ?? '-' }}</p>
         <p style="margin:0;">Kasir: {{ $sale->user->name }}</p>
+        <p style="margin:0;">Pembeli: {{ $customerName ?? '-' }}</p>
         <p style="margin:0;">Tanggal: {{ $sale->sale_date->format('d-m-Y H:i') }}</p>
         <p style="margin:0 0 2px 0;">Invoice: {{ $sale->invoice_number }}</p>
         <hr class="dashed">

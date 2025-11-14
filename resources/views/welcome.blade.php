@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pandhawa Bakery</title>
+    <title>Al Falah Bakery</title>
     <link href="https://fonts.bunny.net/css2?family=Playfair+Display:wght@500;700&family=Poppins:wght@300;400;500&display=swap" rel="stylesheet">
     @vite('resources/css/app.css')
     <style>
@@ -68,7 +68,7 @@
     <section class="hero relative px-6">
         <div class="relative z-10">
             <h1 class="text-5xl md:text-7xl font-[Playfair_Display] mb-4 gold-text tracking-wide">
-                Pandhawa Bakery
+                Al Falah Bakery
             </h1>
             <p class="text-lg md:text-2xl font-light mb-8 max-w-2xl mx-auto text-gray-300">
                 Cita rasa premium, sentuhan elegan, dan kehangatan di setiap gigitan.
@@ -85,14 +85,14 @@
     <section class="section py-20 text-center px-6">
         <h2 class="text-4xl font-[Playfair_Display] mb-6 gold-text">Kelezatan yang Tak Terlupakan</h2>
         <p class="max-w-3xl mx-auto text-gray-400 text-lg leading-relaxed">
-            Pandhawa Bakery menghadirkan roti, kue, dan pastry premium dengan bahan pilihan,
+            Al Falah Bakery menghadirkan roti, kue, dan pastry premium dengan bahan pilihan,
             dibuat dengan cinta oleh tangan profesional. Setiap gigitan adalah kisah kehangatan dan kemewahan.
         </p>
     </section>
 
     <!-- Footer -->
     <footer class="text-gray-500 py-6 text-center text-sm">
-        &copy; {{ date('Y') }} <span class="gold-text font-semibold">Pandhawa Bakery</span>. Semua hak dilindungi.
+        &copy; {{ date('Y') }} <span class="gold-text font-semibold">Al Falah Bakery</span>. Semua hak dilindungi.
     </footer>
 
 </body>
