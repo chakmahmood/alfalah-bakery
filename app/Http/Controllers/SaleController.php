@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Promotion;
 use App\Models\Sale;
 use App\Models\SaleItem;
 use App\Models\SalePayment;
@@ -11,6 +12,7 @@ use App\Models\PaymentMethod;
 use App\Services\StockService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class SaleController extends Controller
 {
@@ -25,15 +27,32 @@ class SaleController extends Controller
         $start = $request->start_date ?? now()->format('Y-m-d');
         $end = $request->end_date ?? now()->format('Y-m-d');
 
-        $sales = Sale::with(['user', 'branch'])
-            ->where('branch_id', $user->branch_id) // filter cabang
+        // Query dasar
+        $query = Sale::where('branch_id', $user->branch_id)
             ->whereDate('sale_date', '>=', $start)
-            ->whereDate('sale_date', '<=', $end)
+            ->whereDate('sale_date', '<=', $end);
+
+        // Filter by invoice jika ada
+        if ($request->invoice) {
+            $keyword = str_replace([' ', '-', '.', '_'], '', strtolower($request->invoice));
+
+            $query->whereRaw("
+        REPLACE(REPLACE(REPLACE(REPLACE(LOWER(invoice_number), '-', ''), ' ', ''), '.', ''), '_', '')
+        LIKE ?
+    ", ["%{$keyword}%"]);
+        }
+
+
+        // Hitung total omzet sesuai filter
+        $totalOmzet = (clone $query)->sum('total');
+
+        // Ambil data + eager load + paginate
+        $sales = $query->with(['user', 'branch'])
             ->orderBy('sale_date', 'desc')
             ->paginate(10)
-            ->appends($request->query()); // agar filter tidak hilang saat pagination
+            ->appends($request->query());
 
-        return view('sales.index', compact('sales'));
+        return view('sales.index', compact('sales', 'totalOmzet'));
     }
 
     /**
@@ -49,6 +68,7 @@ class SaleController extends Controller
         $paymentMethods = PaymentMethod::where('is_active', true)
             ->pluck('name', 'id');
 
+        // === Produk ===
         $products = Product::where('is_sellable', true)
             ->whereHas('branches', function ($q) use ($branch) {
                 $q->where('branches.id', $branch->id);
@@ -57,22 +77,50 @@ class SaleController extends Controller
                 'unit',
                 'stocks' => function ($q) use ($branch) {
                     $q->where('branch_id', $branch->id);
-                }
+                },
+                'promotions' // ⬅ TAMBAHKAN INI
             ])
             ->get()
             ->map(function ($product) use ($branch) {
 
-                // Ambil stok cabang → hilangkan .00
+                // stok
                 $product->stock_quantity = (int) $product->stockQuantityForBranch($branch->id);
-
-                // Tambahkan unit ke attribute product
                 $product->stock_label = $product->stock_quantity . ' ' . ($product->unit->name ?? '');
+
+                // AMBIL PROMO ITEM (kalau ada)
+                if ($product->promotions->isNotEmpty()) {
+                    $promo = $product->promotions->first(); // hanya ambil 1 promo dulu
+                    $product->item_discount_type = $promo->pivot->discount_type;
+                    $product->item_discount_value = $promo->pivot->discount_value;
+                } else {
+                    $product->item_discount_type = null;
+                    $product->item_discount_value = null;
+                }
 
                 return $product;
             });
 
-        return view('sales.create', compact('branches', 'paymentMethods', 'products'));
+
+        // === Promo (aktif & sedang berlaku) ===
+        $promotions = Promotion::where('is_active', true)
+            ->where(function ($q) {
+                $q->where('start_date', '<=', now())
+                    ->where('end_date', '>=', now());
+            })
+            ->orderBy('type')     // fixed/percentage
+            ->orderBy('value', 'desc')
+            ->with('products')
+            ->get();
+
+
+        return view('sales.create', compact(
+            'branches',
+            'paymentMethods',
+            'products',
+            'promotions',
+        ));
     }
+
 
 
 
@@ -103,8 +151,14 @@ class SaleController extends Controller
                 throw new \Exception('Tidak ada item yang dikirim.');
             }
 
-            // 🔹 Generate nomor invoice otomatis
-            $invoiceNumber = 'INV-' . now()->format('YmdHis');
+            // Ambil nama cabang dari user
+            $branchName = auth()->user()->branch->code ?? 'CABANG';
+
+            // Bersihkan nama (hilangkan spasi, karakter aneh)
+            $branchCode = Str::upper(Str::slug($branchName, ''));
+
+            // Buat invoice baru
+            $invoiceNumber = 'INV-' . $branchCode . '-' . now()->format('YmdHis');
 
             // Ambil diskon
             $discount = $validated['discount'] ?? 0;

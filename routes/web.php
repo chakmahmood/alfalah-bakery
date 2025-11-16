@@ -12,4 +12,3 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/sales/print/{invoice}', [PrintController::class, 'printStruk'])->name('sales.print');
     Route::resource('sales', SaleController::class);
 });
-

@@ -6,7 +6,36 @@
 
     <div class="p-3 text-center">
         <p class="font-semibold text-yellow-800 text-sm truncate" x-text="p.name"></p>
-        <p class="text-yellow-600 font-bold text-sm">Rp <span x-text="format(p.sell_price)"></span></p>
+        <!-- Jika produk TIDAK punya diskon -->
+        <template x-if="!getDiscountedPrice(p)">
+            <p class="text-yellow-600 font-bold text-sm">
+                Rp <span x-text="format(p.sell_price)"></span>
+            </p>
+        </template>
+
+        <!-- Jika produk punya diskon -->
+        <template x-if="getDiscountedPrice(p)">
+            <div>
+                <!-- Harga asli dicoret -->
+                <p class="text-gray-400 text-xs line-through">
+                    Rp <span x-text="format(p.sell_price)"></span>
+                </p>
+
+                <!-- Harga diskon -->
+                <p class="text-green-600 font-bold text-sm">
+                    Rp <span x-text="format(getDiscountedPrice(p))"></span>
+                </p>
+
+                <!-- Badge -->
+                <p class="text-red-600 text-xs font-bold mt-1">
+                    DISKON
+                    <span x-text="p.item_discount_type === 'percentage'
+                ? p.item_discount_value + '%'
+                : 'Rp ' + format(p.item_discount_value)">
+                    </span>
+                </p>
+            </div>
+        </template>
 
         <p class="text-xs text-gray-500">
             <template x-if="p.stock_quantity <= 0">

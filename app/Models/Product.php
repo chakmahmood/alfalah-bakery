@@ -78,6 +78,16 @@ class Product extends Model
         return $this->hasMany(StockMovement::class);
     }
 
+    // di Product.php
+    public function promotions()
+    {
+        return $this->belongsToMany(Promotion::class, 'promotion_products', 'product_id', 'promotion_id')
+            ->withPivot('discount_type', 'discount_value')
+            ->withTimestamps();
+    }
+
+
+
     /*
     |--------------------------------------------------------------------------
     | Helpers

@@ -10,8 +10,21 @@
 
     <div class="mt-4">
         <label class="block text-sm font-semibold text-yellow-800 mb-2">💵 Uang Diterima</label>
+
+        <!-- INPUT -->
         <input type="number" x-model.number="amount_received" name="amount_received"
             class="w-full border border-yellow-300 rounded-xl py-2 px-3 focus:ring-2 focus:ring-yellow-400" />
+
+        <!-- SHORTCUT BUTTONS (MODE +=) -->
+        <div class="flex flex-wrap gap-2 mt-3">
+            <template x-for="nom in [5000, 20000, 50000, 100000, 200000, 500000]" :key="nom">
+                <button type="button"
+                    @click="amount_received = (amount_received || 0) + nom"
+                    class="px-3 py-2 bg-yellow-100 hover:bg-yellow-200 border border-yellow-300 rounded-xl text-sm font-semibold text-yellow-800 transition">
+                    <span x-text="'+' + 'Rp ' + format(nom)"></span>
+                </button>
+            </template>
+        </div>
     </div>
 
     <template x-if="amount_received > 0">

@@ -10,9 +10,11 @@
             <div class="flex items-center justify-between bg-yellow-50 rounded-lg px-3 py-2">
                 <div class="truncate">
                     <p class="font-semibold text-yellow-800 text-sm truncate" x-text="item.name"></p>
-                    <p class="text-xs text-gray-500">Rp <span x-text="format(item.price)"></span> × <span x-text="item.quantity"></span></p>
+                    <p class="text-xs text-gray-500">Rp <span x-text="format(item.price)"></span> × <span
+                            x-text="item.quantity"></span></p>
                 </div>
-                <p class="font-bold text-yellow-700 text-sm whitespace-nowrap">Rp <span x-text="format(item.subtotal)"></span></p>
+                <p class="font-bold text-yellow-700 text-sm whitespace-nowrap">Rp <span
+                        x-text="format(item.subtotal)"></span></p>
             </div>
         </template>
     </div>
@@ -27,13 +29,18 @@
         {{-- Diskon --}}
         <div class="flex justify-between items-center">
             <span>Diskon:</span>
-            <input type="number" x-model.number="discount"
-                   @input="updateTotal()"
-                   class="w-20 text-right border border-yellow-300 rounded-lg py-1 px-2 text-sm focus:ring-2 focus:ring-yellow-400"
-                   placeholder="0" />
+
+            <div class="flex items-center border border-yellow-300 rounded-lg px-2 py-1 bg-white/80">
+                <span class="text-gray-600 text-sm mr-1">Rp</span>
+                <input type="number" x-model.number="discount" @input="updateTotal()"
+                    class="w-20 text-right outline-none text-sm" placeholder="0" />
+            </div>
         </div>
 
-        <div class="flex justify-between"><span>Pajak (10%):</span><span>Rp <span x-text="format(tax)"></span></span></div>
-        <div class="flex justify-between font-bold text-lg text-yellow-700"><span>Total:</span><span>Rp <span x-text="format(total)"></span></span></div>
+
+        <div class="flex justify-between"><span>Pajak (10%):</span><span>Rp <span x-text="format(tax)"></span></span>
+        </div>
+        <div class="flex justify-between font-bold text-lg text-yellow-700"><span>Total:</span><span>Rp <span
+                    x-text="format(total)"></span></span></div>
     </div>
 </div>

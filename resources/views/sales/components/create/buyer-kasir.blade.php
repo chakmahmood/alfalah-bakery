@@ -4,8 +4,9 @@
         <p class="font-semibold text-yellow-800 text-sm mb-1">Nama Pembeli</p>
 
         <!-- Input -->
-        <input type="text" x-model="customer_name" placeholder="Masukkan nama pembeli"
-            class="w-full border border-yellow-300 rounded-xl py-2 px-3 focus:ring-2 focus:ring-yellow-400 focus:outline-none"
-            @keydown.enter.prevent />
+        <input type="text" x-model="customer_name" x-on:input="$refs.customer_name_hidden.value = customer_name"
+            placeholder="Masukkan nama pembeli"
+            class="w-full border border-yellow-300 rounded-xl py-2 px-3 focus:ring-2 focus:ring-yellow-400 focus:outline-none" />
+
     </div>
 </div>
