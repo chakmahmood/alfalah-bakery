@@ -13,17 +13,49 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        // Admin default
-        User::updateOrCreate(
-            ['email' => 'admin@example.com'],
+        // Rootmaster
+        $root = User::updateOrCreate(
+            ['email' => 'rootmaster@pdk.com'],
             [
-                'name' => 'headcliff',
-                'password' => Hash::make('abc321'),
+                'name' => 'Root Master',
+                'password' => Hash::make('Overlord99'),
                 'email_verified_at' => now(),
             ]
         );
+        $root->assignRole('super_admin');
 
-        // Contoh tambahan 10 user acak
-        // User::factory(10)->create();
+        // Superadmin
+        $superadmin = User::updateOrCreate(
+            ['email' => 'superadmin@roti.com'],
+            [
+                'name' => 'Super Admin',
+                'password' => Hash::make('super12345'),
+                'email_verified_at' => now(),
+            ]
+        );
+        $superadmin->assignRole('superadmin');
+
+        // Admin
+        $admin = User::updateOrCreate(
+            ['email' => 'admin@roti.com'],
+            [
+                'name' => 'Admin',
+                'password' => Hash::make('admin12345'),
+                'email_verified_at' => now(),
+            ]
+        );
+        $admin->assignRole('admin');
+
+        // Kasir
+        $kasir = User::updateOrCreate(
+            ['email' => 'kasir@roti.com'],
+            [
+                'name' => 'Kasir',
+                'password' => Hash::make('kasir12345'),
+                'email_verified_at' => now(),
+            ]
+        );
+        $kasir->assignRole('kasir');
+
     }
 }
